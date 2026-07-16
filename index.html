@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>아이랑 갈래? - AI 맞춤형 여행 플래너</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -40,36 +42,22 @@
           <input type="text" id="welcome-departure" class="input-field" placeholder="예: 서울 강남구, 부산 해운대구">
         </div>
 
-        <div class="input-group">
-          <label for="welcome-api-key">Gemini API Key</label>
-          <input type="password" id="welcome-api-key" class="input-field" placeholder="AI 실시간 생성을 위해 입력해주세요">
-          <button type="button" class="api-guide-btn" onclick="openApiGuide()">API 키 발급 방법을 모르시겠나요?</button>
-        </div>
-
-        <button type="button" class="login-btn" onclick="handleLogin()">시작하기</button>
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="google-login-btn" id="btn-google-login" onclick="handleGoogleLogin()">
+          <svg viewBox="0 0 48 48" width="22" height="22">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Google 계정으로 로그인</span>
+        </button>
 
         <div class="demo-link-container">
-          <button type="button" class="demo-btn" onclick="handleDemoLogin()">API 키 없이 체험해보기 (데모 모드)</button>
+          <button type="button" class="demo-btn" onclick="handleDemoLogin()">로그인 없이 데모로 체험하기</button>
         </div>
       </div>
     </section>
-
-    <!-- API 키 가이드 모달 -->
-    <div id="modal-api-guide" class="modal">
-      <div class="modal-content">
-        <button class="modal-close" onclick="closeApiGuide()">&times;</button>
-        <h3>Google Gemini API Key 발급 방법</h3>
-        <ol>
-          <li><a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>에 접속하여 로그인합니다.</li>
-          <li>좌측 상단의 <strong>"Get API key"</strong> 버튼을 클릭합니다.</li>
-          <li><strong>"Create API key"</strong> 버튼을 눌러 새로운 API 키를 생성합니다.</li>
-          <li>생성된 키를 복사하여 본 앱의 API Key 란에 붙여넣기합니다.</li>
-        </ol>
-        <p style="font-size: 11px; color: var(--danger); margin-top: 10px;">
-          * 입력하신 API 키는 브라우저(LocalStorage)에만 안전하게 저장되며, 외부 서버로 전송되지 않습니다.
-        </p>
-      </div>
-    </div>
 
     <!-- 2. 탐색 탭 (메인 기능) -->
     <section id="tab-explore" class="tab-content">
@@ -333,24 +321,27 @@
       
       <div class="settings-section">
         <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--accent);">사용자 프로필</h3>
-        <div class="settings-row">
-          <span class="settings-label">로그인 계정</span>
-          <span class="settings-value" id="settings-account-type">데모 모드</span>
+        <!-- Google 계정 로그인 시 표시 -->
+        <div id="settings-google-profile" style="display:none;">
+          <div class="settings-row" style="align-items: center; gap: 12px;">
+            <img id="settings-profile-img" src="" alt="프로필" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border: 2px solid var(--accent);">
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:14px;" id="settings-profile-name">-</div>
+              <div style="font-size:12px; color:var(--text-secondary);" id="settings-profile-email">-</div>
+            </div>
+          </div>
         </div>
-        <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
+        <!-- 데모 모드 시 표시 -->
+        <div id="settings-demo-profile">
+          <div class="settings-row">
+            <span class="settings-label">로그인 계정</span>
+            <span class="settings-value" id="settings-account-type">데모 모드</span>
+          </div>
+        </div>
+        <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px; margin-top: 14px;">
           <span class="settings-label">기본 출발지 설정</span>
           <input type="text" id="settings-default-departure" class="input-field" placeholder="예: 부산 사하구" onchange="updateSettingsDeparture(this.value)">
         </div>
-      </div>
-
-      <div class="settings-section">
-        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--primary);">Gemini API 정보</h3>
-        <div class="input-group">
-          <label for="settings-api-key">Gemini API Key</label>
-          <input type="password" id="settings-api-key" class="input-field" placeholder="API Key 변경을 원하시면 입력하세요">
-          <button type="button" class="api-guide-btn" onclick="openApiGuide()">API 키 재발급 가이드</button>
-        </div>
-        <button type="button" class="login-btn" style="padding: 10px; font-size:13px;" onclick="updateSettingsApiKey()">API Key 저장</button>
       </div>
 
       <button type="button" class="logout-btn" onclick="handleLogout()">로그아웃 (설정 초기화)</button>
