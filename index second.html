@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>아이랑 갈래? - AI 맞춤형 여행 플래너</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- 메인 헤더 (로그인 후에만 노출) -->
+  <header id="main-header" style="display: none;">
+    <div class="logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+      </svg>
+      <span>아이랑 갈래?</span>
+    </div>
+    <div class="profile-summary">
+      <span class="profile-tag" id="header-departure">서울 출발</span>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐트 영역 -->
+  <main class="app-container">
+
+    <!-- 1. 웰컴 및 로그인 화면 -->
+    <section id="screen-welcome" class="welcome-screen">
+      <div class="welcome-logo">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l7 2.5z"/>
+        </svg>
+      </div>
+      <h1>AI 맞춤형 여행 플래너</h1>
+      <p>출발지, 기간, 아이의 연령대에 최적화된 동선과 맛집, 숙소를 실시간 추천해 드립니다.</p>
+
+      <div class="login-card">
+        <div class="input-group">
+          <label for="welcome-departure">기본 출발지 설정</label>
+          <input type="text" id="welcome-departure" class="input-field" placeholder="예: 서울 강남구, 부산 해운대구">
+        </div>
+
+        <!-- Google 로그인 버튼 -->
+        <button type="button" class="google-login-btn" id="btn-google-login" onclick="handleGoogleLogin()">
+          <svg viewBox="0 0 48 48" width="22" height="22">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+          </svg>
+          <span>Google 계정으로 로그인</span>
+        </button>
+
+        <div class="demo-link-container">
+          <button type="button" class="demo-btn" onclick="handleDemoLogin()">로그인 없이 데모로 체험하기</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. 탐색 탭 (메인 기능) -->
+    <section id="tab-explore" class="tab-content">
+      
+      <!-- 검색 필터 카드 -->
+      <div class="search-card">
+        <div class="search-title">
+          <svg viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+          </svg>
+          <span>어디로 떠나시나요?</span>
+        </div>
+
+        <form id="search-form" onsubmit="event.preventDefault(); triggerSearch();">
+          <div class="input-row">
+            <div class="input-group">
+              <label for="search-departure">출발지</label>
+              <input type="text" id="search-departure" class="input-field" placeholder="예: 서울 마포구" onchange="saveDefaultDeparture(this.value)">
+            </div>
+            <div class="input-group">
+              <label for="search-destination">목적지</label>
+              <input type="text" id="search-destination" class="input-field" placeholder="경주, 제주, 후쿠오카 등" required>
+            </div>
+          </div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <label for="search-duration">여행 기간</label>
+              <select id="search-duration" class="input-field">
+                <option value="당일치기">당일치기</option>
+                <option value="1박 2일">1박 2일</option>
+                <option value="2박 3일" selected>2박 3일</option>
+                <option value="일주일">일주일</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="search-companion">동반자 유형</label>
+              <select id="search-companion" class="input-field" onchange="toggleCompanionDetails(this.value)">
+                <option value="family" selected>아이들과 함께 (가족)</option>
+                <option value="friends">친구들과 함께</option>
+                <option value="couple">연인과 함께</option>
+                <option value="colleagues">직장 동료들과</option>
+                <option value="solo">나홀로 여행</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group" style="margin-bottom: 16px;">
+            <label for="search-style">선호 여행 스타일</label>
+            <select id="search-style" class="input-field">
+              <option value="all" selected>상관없음 (골고루 추천)</option>
+              <option value="indoor">실내 중심 (미술관, 박물관, 실내테마파크 등)</option>
+              <option value="outdoor">야외/자연 중심 (공원, 자연경관, 가벼운 산책 등)</option>
+              <option value="activity">액티비티 중심 (놀이공원, 체험 프로그램, 레포츠 등)</option>
+              <option value="culture">역사/문화 탐방 (사찰, 성곽, 역사 유적지 등)</option>
+              <option value="healing">휴식/힐링 중심 (리조트 호캉스, 온천/스파, 한적한 산책 등)</option>
+            </select>
+          </div>
+
+          <!-- 자녀 동반 시 추가 필드 -->
+          <div id="child-selector" class="child-selector-container active">
+            <div class="child-count-row">
+              <span style="font-size: 13px; font-weight: 700;">자녀 수</span>
+              <div class="counter">
+                <button type="button" class="counter-btn" onclick="updateCounter('kids-count', -1)">-</button>
+                <span id="kids-count" class="counter-val">2</span>
+                <button type="button" class="counter-btn" onclick="updateCounter('kids-count', 1)">+</button>
+              </div>
+            </div>
+
+            <span style="display:block; font-size:12px; font-weight:700; color:var(--text-secondary); margin-bottom:8px;">자녀 연령대 (중복선택 가능)</span>
+            <div class="age-chips">
+              <div class="age-chip">
+                <input type="checkbox" id="age-infant" value="영유아(0-3세)" checked>
+                <label for="age-infant" class="age-chip-label">
+                  <span>영유아</span>
+                  <span class="age-chip-desc">0~3세</span>
+                </label>
+              </div>
+              <div class="age-chip">
+                <input type="checkbox" id="age-toddler" value="유아(4-7세)" checked>
+                <label for="age-toddler" class="age-chip-label">
+                  <span>유아</span>
+                  <span class="age-chip-desc">4~7세</span>
+                </label>
+              </div>
+              <div class="age-chip">
+                <input type="checkbox" id="age-elementary" value="초등학생(8-13세)">
+                <label for="age-elementary" class="age-chip-label">
+                  <span>초등생</span>
+                  <span class="age-chip-desc">8~13세</span>
+                </label>
+              </div>
+              <div class="age-chip">
+                <input type="checkbox" id="age-teen" value="중고등학생(14-19세)">
+                <label for="age-teen" class="age-chip-label">
+                  <span>청소년</span>
+                  <span class="age-chip-desc">14~19세</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 추천 키워드 -->
+          <div class="quick-dest-row">
+            <span>자주 추천하는 국내외 인기 여행지</span>
+            <div class="quick-badges">
+              <div class="quick-badge" onclick="setQuickSearch('제주')">제주도 🌴</div>
+              <div class="quick-badge" onclick="setQuickSearch('경주')">역사 경주 🏛️</div>
+              <div class="quick-badge" onclick="setQuickSearch('후쿠오카')">온천 후쿠오카 🇯🇵</div>
+              <div class="quick-badge" onclick="setQuickSearch('다낭')">다낭 리조트 🇻🇳</div>
+              <div class="quick-badge" onclick="setQuickSearch('강릉')">강릉 바다 🌊</div>
+              <div class="quick-badge" onclick="setQuickSearch('괌')">키즈천국 괌 🇺🇸</div>
+            </div>
+          </div>
+
+          <button type="submit" class="search-submit-btn">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            <span id="search-btn-text">AI 맞춤 일정 생성하기</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- 로딩 스켈레톤 -->
+      <div id="results-skeleton" class="skeleton-loader">
+        <div class="skeleton-card">
+          <div class="skeleton-text skeleton-title"></div>
+          <div class="skeleton-text skeleton-body"></div>
+        </div>
+        <div class="skeleton-card">
+          <div class="skeleton-text skeleton-title"></div>
+          <div class="skeleton-text" style="width: 80%;"></div>
+          <div class="skeleton-text" style="width: 90%;"></div>
+          <div class="skeleton-text" style="width: 70%;"></div>
+        </div>
+      </div>
+
+      <!-- 여정 상세 결과 화면 -->
+      <div id="results-container" class="itinerary-results">
+        
+        <!-- 히어로 배너 (목적지 요약) -->
+        <div class="hero-banner" id="res-hero">
+          <h2 class="dest-name" id="res-dest-name">제주도</h2>
+          <span class="duration-badge" id="res-duration">2박 3일</span>
+          <p class="suitability-text" id="res-suitability">유아와 영유아 동반 가족을 위한 최적의 여행 코스...</p>
+        </div>
+
+        <!-- 액션 버튼 바 -->
+        <div class="action-bar">
+          <button type="button" class="action-btn" id="btn-save-plan" onclick="toggleSaveCurrentPlan()">
+            <svg viewBox="0 0 24 24">
+              <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+            </svg>
+            <span id="save-btn-text">이 일정 보관하기</span>
+          </button>
+        </div>
+
+        <!-- 데스크톱용 그리드 래퍼 -->
+        <div class="itinerary-grid">
+          
+          <!-- 좌측: 교통편 & 일정 동선 -->
+          <div class="itinerary-grid-left">
+            <!-- 교통 정보 -->
+            <div class="result-section">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M20 15.5c-1.25 0-2.5-.27-3.64-.78l-2.2 2.2c1.78.85 3.73 1.35 5.84 1.4v-2.82zM4.3 9.36l2.2-2.2C5.97 6.02 5.48 4.77 5.37 3.5H2.5c.05 2.11.55 4.06 1.4 5.86h.4zM20 4h-4v2h4v2h-4v2h4c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 14H2c0 2.2 1.8 4 4 4v-2c-1.1 0-2-.9-2-2zm0-4H2c0 1.1.9 2 2 2v-2z"/>
+                </svg>
+                <span>추천 교통수단 및 예약방법</span>
+              </h3>
+              <div class="transit-summary">
+                <div class="transit-icon">
+                  <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L14 19v-5.5l7 2.5z"/></svg>
+                </div>
+                <div>
+                  <div class="transit-type" id="res-transit-method">항공기 + 렌터카</div>
+                  <div class="transit-time" id="res-transit-duration">약 1시간 10분</div>
+                </div>
+              </div>
+              <p class="transit-details" id="res-transit-details">김포에서 비행기를 탑승하고...</p>
+              <div class="link-buttons" id="res-transit-links">
+                <!-- 동적 링크 삽입 -->
+              </div>
+            </div>
+
+            <!-- 타임라인 동선 -->
+            <div class="result-section">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.33.07.52 0 1.1-.9 2-2 2s-2-.9-2-2c0-.19.02-.36.07-.52l-2.55-2.55c-.16.05-.33.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05.16.07.33.07.52 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.19 0 .36.02.52.07l4.56-4.55C8.02 9.36 8 9.19 8 9c0-1.1.9-2 2-2s2 .9 2 2c0 .19-.02.36-.07.52l2.55 2.55c.16-.05.33-.07.52-.07s.36.02.52.07l3.55-3.56C19.02 8.36 19 8.19 19 8c0-1.1.9-2 2-2s2 .9 2 2z"/>
+                </svg>
+                <span>상세 여정 동선 (일정표)</span>
+              </h3>
+              <div class="timeline" id="res-timeline">
+                <!-- 동적 타임라인 아이템 삽입 -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 숙소 및 맛집 추천 -->
+          <div class="itinerary-grid-right">
+            <!-- 숙소 추천 -->
+            <div class="result-section">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z"/>
+                </svg>
+                <span>맞춤 추천 숙소</span>
+              </h3>
+              <div id="res-accommodations">
+                <!-- 동적 숙소 카드 삽입 -->
+              </div>
+            </div>
+
+            <!-- 맛집 리스트 -->
+            <div class="result-section">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M8.1 21.8c-1.4 0-2.5-1.1-2.5-2.5v-6.3h-1v6.3C4.6 20.7 3.5 21.8 2.1 21.8c-1.4 0-2.5-1.1-2.5-2.5v-10h1v10c0 .8.7 1.5 1.5 1.5.8 0 1.5-.7 1.5-1.5V1.2h1v18.1c0 .8.7 1.5 1.5 1.5.8 0 1.5-.7 1.5-1.5v-6.3h1v6.3c0 1.4-1.1 2.5-2.5 2.5zm6.8-6.1h1.5l1.6-4.9H16.4c-1.6 0-2.9-1.3-2.9-2.9V1.2h1v6.7c0 1.1.9 2 2 2h3.2l1.6 4.9H23c1.6 0 2.9 1.3 2.9 2.9v1.8h-12v-1.8z"/>
+                </svg>
+                <span>동선 추천 맛집 리스트</span>
+              </h3>
+              <div class="horizontal-scroll" id="res-restaurants">
+                <!-- 동적 맛집 카드 삽입 -->
+              </div>
+            </div>
+
+            <!-- 할인 팁 정보 -->
+            <div class="result-section">
+              <h3 class="section-title">
+                <svg viewBox="0 0 24 24">
+                  <path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 8.25c-.97 0-1.75-.78-1.75-1.75s.78-1.75 1.75-1.75 1.75.78 1.75 1.75-.78 1.75-1.75 1.75z"/>
+                </svg>
+                <span>맞춤 할인 혜택 및 꿀팁</span>
+              </h3>
+              <div id="res-discounts">
+                <!-- 동적 할인 아이템 삽입 -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- 3. 보관함 탭 -->
+    <section id="tab-saved" class="tab-content">
+      <h2 style="font-size: 22px; font-weight: 900; margin-bottom: 20px;">보관함</h2>
+      <div id="saved-plans-list" class="saved-list">
+        <!-- 보관된 카드 동적 로드 -->
+      </div>
+    </section>
+
+    <!-- 4. 설정 탭 -->
+    <section id="tab-settings" class="tab-content">
+      <h2 style="font-size: 22px; font-weight: 900; margin-bottom: 20px;">설정 및 정보</h2>
+      
+      <div class="settings-section">
+        <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--accent);">사용자 프로필</h3>
+        <!-- Google 계정 로그인 시 표시 -->
+        <div id="settings-google-profile" style="display:none;">
+          <div class="settings-row" style="align-items: center; gap: 12px;">
+            <img id="settings-profile-img" src="" alt="프로필" style="width:44px; height:44px; border-radius:50%; object-fit:cover; border: 2px solid var(--accent);">
+            <div style="flex:1;">
+              <div style="font-weight:700; font-size:14px;" id="settings-profile-name">-</div>
+              <div style="font-size:12px; color:var(--text-secondary);" id="settings-profile-email">-</div>
+            </div>
+          </div>
+        </div>
+        <!-- 데모 모드 시 표시 -->
+        <div id="settings-demo-profile">
+          <div class="settings-row">
+            <span class="settings-label">로그인 계정</span>
+            <span class="settings-value" id="settings-account-type">데모 모드</span>
+          </div>
+        </div>
+        <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 8px; margin-top: 14px;">
+          <span class="settings-label">기본 출발지 설정</span>
+          <input type="text" id="settings-default-departure" class="input-field" placeholder="예: 부산 사하구" onchange="updateSettingsDeparture(this.value)">
+        </div>
+      </div>
+
+      <button type="button" class="logout-btn" onclick="handleLogout()">로그아웃 (설정 초기화)</button>
+    </section>
+
+  </main>
+
+  <!-- 하단 탭 네비게이션 바 (로그인 후에만 노출) -->
+  <nav id="bottom-navbar" class="bottom-nav" style="display: none;">
+    <button class="nav-tab active" onclick="switchTab('explore')" id="nav-explore">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+      </svg>
+      <span>여행 추천</span>
+    </button>
+    <button class="nav-tab" onclick="switchTab('saved')" id="nav-saved">
+      <svg viewBox="0 0 24 24">
+        <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+      </svg>
+      <span>보관함</span>
+    </button>
+    <button class="nav-tab" onclick="switchTab('settings')" id="nav-settings">
+      <svg viewBox="0 0 24 24">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+      </svg>
+      <span>설정</span>
+    </button>
+  </nav>
+
+  <!-- 메인 스크립트 로드 -->
+  <script src="data.js"></script>
+  <script src="gemini-api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
