@@ -115,7 +115,7 @@ function handleGoogleLogin() {
   // Access Token 요청 (Implicit/Token 모델)
   const tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/generative-language openid profile email',
+    scope: 'openid profile email',
     callback: async (tokenResponse) => {
       if (tokenResponse.error) {
         console.error('Google 로그인 실패:', tokenResponse.error);
